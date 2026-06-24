@@ -42,13 +42,16 @@ function randomPrice(category) {
 
 function generateProducts(count, startIndex = 0) {
   const products = [];
+  const baseTime = Date.now(); // FIX: Get absolute base time once
+
   for (let i = 0; i < count; i++) {
     const category = categoryNames[Math.floor(Math.random() * categoryNames.length)];
     const productList = categories[category];
     const productName = productList[Math.floor(Math.random() * productList.length)] + ` #${startIndex + i + 1}`;
     const price = randomPrice(category);
 
-    const created = new Date();
+    // FIX: Add 'i' milliseconds to guarantee strictly unique sorting timestamps
+    const created = new Date(baseTime + i);
     const updated = new Date(created);
 
     products.push({
