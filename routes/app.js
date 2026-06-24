@@ -1,68 +1,103 @@
 const express = require("express");
 const pool = require("../db");
+
 const routes = express.Router();
 
-routes.get("/alldata", async(req, res) => {
-      try {
-        const { cursorDate, cursorId, categoryfilter } = req.query;
-        let query;
-        let values;
+routes.get("/alldata", async (req, res) => {
+  try {
+    const { cursorDate, cursorId, categoryfilter } = req.query;
 
-        if(!cursorDate || !cursorId){
-            // first page
-            query = `
-                    SELECT *, updated_at::text AS exact_cursor_date
-                    FROM products
-                    ORDER BY updated_at DESC, id DESC
-                    LIMIT 10;
-                `;
-            values = [];
-        } else {
-            // next page
-            query = `
-                    SELECT *, updated_at::text AS exact_cursor_date
-                    FROM products
-                    WHERE (updated_at, id) < ($1, $2)
-                    ORDER BY updated_at DESC, id DESC
-                    LIMIT 10;
-            `;
-            values = [cursorDate, cursorId];
-        }
-        
-        const result = await pool.query(query, values);
+    let query;
+    let values = [];
 
-        let nextCursor = null;
+    // FIRST PAGE
+    if (!cursorDate || !cursorId) {
 
-        if(result.rows.length > 0){
-             const last = result.rows[result.rows.length - 1];
+      if (categoryfilter) {
+        query = `
+          SELECT *, updated_at::text AS exact_cursor_date
+          FROM products
+          WHERE category = $1
+          ORDER BY updated_at DESC, id DESC
+          LIMIT 10;
+        `;
 
-             nextCursor = {
-                cursorDate: last.exact_cursor_date, // Use the raw DB string, not the JS Date
-                cursorId: last.id,
-             };
-        }
+        values = [categoryfilter];
 
-        // Clean up: Remove the extra 'exact_cursor_date' property so it doesn't pollute your API response
-        const data = result.rows.map(row => {
-            const { exact_cursor_date, ...rest } = row;
-            return rest;
-        });
-
-        return res.json({
-            success: true,
-            nextCursor,
-            data
-         });
-
-      } catch(err) {
-        return res.status(500).json({
-            success: false,
-            error: err.message
-        });
+      } else {
+        query = `
+          SELECT *, updated_at::text AS exact_cursor_date
+          FROM products
+          ORDER BY updated_at DESC, id DESC
+          LIMIT 10;
+        `;
       }
+
+    } else {
+
+      // NEXT PAGE
+      if (categoryfilter) {
+        query = `
+          SELECT *, updated_at::text AS exact_cursor_date
+          FROM products
+          WHERE category = $1
+          AND (updated_at, id) < ($2, $3)
+          ORDER BY updated_at DESC, id DESC
+          LIMIT 10;
+        `;
+
+        values = [
+          categoryfilter,
+          cursorDate,
+          cursorId
+        ];
+
+      } else {
+        query = `
+          SELECT *, updated_at::text AS exact_cursor_date
+          FROM products
+          WHERE (updated_at, id) < ($1, $2)
+          ORDER BY updated_at DESC, id DESC
+          LIMIT 10;
+        `;
+
+        values = [
+          cursorDate,
+          cursorId
+        ];
+      }
+    }
+
+    const result = await pool.query(query, values);
+
+    let nextCursor = null;
+
+    if (result.rows.length > 0) {
+      const last = result.rows[result.rows.length - 1];
+
+      nextCursor = {
+        cursorDate: last.exact_cursor_date,
+        cursorId: last.id,
+      };
+    }
+
+    const data = result.rows.map((row) => {
+      const { exact_cursor_date, ...rest } = row;
+      return rest;
+    });
+
+    return res.json({
+      success: true,
+      nextCursor,
+      data,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
 });
-
-
-//
 
 module.exports = routes;
