@@ -48,8 +48,8 @@ function generateProducts(count, startIndex = 0) {
     const productName = productList[Math.floor(Math.random() * productList.length)] + ` #${startIndex + i + 1}`;
     const price = randomPrice(category);
 
-    const created = new Date(Date.now() - Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000);
-    const updated = new Date(created.getTime() + Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000);
+    const created = new Date();
+    const updated = new Date(created);
 
     products.push({
       name: productName,
