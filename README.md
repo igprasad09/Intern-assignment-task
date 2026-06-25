@@ -1,160 +1,40 @@
-# Product Catalog Backend API
+# 🛍️ Product Catalog Backend API
 
-A high-performance backend built with **Node.js**, **Express.js**, and **PostgreSQL (Neon)** for browsing a large product catalog.
+[![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg?logo=node.js)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-Backend-blue.svg?logo=express)](https://expressjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791.svg?logo=postgresql)](https://neon.tech/)
+[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black.svg?logo=vercel)](https://vercel.com/)
 
-The project supports generating products, storing them in PostgreSQL, and retrieving them through REST APIs. It is designed as a take-home assignment for the CodeVector Internship.
+A high-performance backend built with **Node.js**, **Express.js**, and **PostgreSQL (Neon)** for generating, storing, and browsing a massive product catalog. 
 
----
-
-## 🚀 Tech Stack
-
-* Node.js
-* Express.js
-* PostgreSQL (Neon)
-* pg (PostgreSQL Driver)
+Designed as a take-home assignment for the CodeVector Internship, this API focuses on speed, scalable data seeding, and efficient cursor-based pagination.
 
 ---
 
-## 📂 Features
+## ✨ Features
 
-* Generate realistic product data
-* Store products in PostgreSQL
-* Batch insertion for fast database writes
-* REST API endpoints
-* Scalable architecture
-* Ready for implementing cursor-based pagination and filtering
-
----
-
-## 📦 Installation
-
-Clone the repository:
-
-```bash
-git clone <your-repository-url>
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Create a `.env` file:
-
-```env
-DATABASE_URL=your_neon_database_url
-PORT=3000
-```
-
-Start the server:
-
-```bash
-npm start
-```
-
-or
-
-```bash
-npm run dev
-```
+- **🚀 High-Speed Data Generation:** Generates and inserts realistic product data using optimized batch insertions.
+- **📜 Cursor-Based Pagination:** Fetches data blazingly fast regardless of table size, avoiding the performance bottlenecks of standard `OFFSET/LIMIT` queries.
+- **🏷️ Dynamic Filtering:** Instantly filter products by category while maintaining correct pagination order.
+- **⏱️ Staggered Timestamps:** Ensures perfectly unique insertion timestamps to prevent sorting collisions during pagination.
+- **☁️ Cloud Deployed:** Live API hosted on Vercel with a Neon Serverless Postgres database.
 
 ---
 
-## 📡 API Endpoints
+## 📡 Live API Endpoints (Production)
 
-### 1. Test Database Connection
+**Base URL:** `https://intern-assignment-task.vercel.app`
 
-**GET**
+### 1. Fetch Products (Cursor Pagination & Filtering)
+Retrieves a paginated list of products (10 per page). Supports category filtering and cursor-based pagination for endless scrolling.
 
-```
-http://localhost:3000/test
-```
+- **URL:** `/alldata`
+- **Method:** `GET`
+- **Query Parameters:**
+  - `categoryfilter` *(optional)*: Filter by category (e.g., `Electronics`, `Fashion`, `Books`, `Furniture`, `Sports`).
+  - `cursorDate` *(optional)*: The exact `updated_at` timestamp of the last item from the previous page.
+  - `cursorId` *(optional)*: The `id` of the last item from the previous page (used as a tie-breaker).
 
-Returns a response to verify that the application is successfully connected to the PostgreSQL database.
-
----
-
-### 2. Generate Products
-
-**GET**
-
-```
-http://localhost:3000/generate
-```
-
-Generates and inserts the default number of products into the database.
-
----
-
-### 3. Generate a Custom Number of Products
-
-**GET**
-
-```
-http://localhost:3000/generate?limit=10
-```
-
-Replace `10` with any number to generate that many products.
-
-Example:
-
-```
-http://localhost:3000/generate?limit=1000
-```
-
----
-
-## 🗄 Database Schema
-
-| Column     | Type                    |
-| ---------- | ----------------------- |
-| id         | BIGSERIAL (Primary Key) |
-| name       | TEXT                    |
-| category   | TEXT                    |
-| price      | NUMERIC                 |
-| created_at | TIMESTAMP               |
-| updated_at | TIMESTAMP               |
-
----
-
-## ⚡ Performance
-
-* Uses **batch inserts** instead of inserting one row at a time.
-* Reduces the number of database requests significantly.
-* Designed for efficiently generating large datasets (e.g., 200,000 products).
-
----
-
-## 📁 Project Structure
-
-```
-.
-├── routes/
-├── db.js
-├── server.js
-├── package.json
-├── .env
-└── README.md
-```
-
----
-
-## 📌 Future Improvements
-
-* Cursor-based pagination
-* Category filtering
-* Product search
-* Sorting by updated date
-* Frontend dashboard
-* Docker support
-* Unit and integration tests
-
----
-
-## 👨‍💻 Author
-
-**Prasad Kamble**
-
-Built as part of the CodeVector Backend Internship Assignment.
-﻿# Intern-assignment-task
+**Example 1: Fetch first page of Books**
+```http
+GET [https://intern-assignment-task.vercel.app/alldata?categoryfilter=Books](https://intern-assignment-task.vercel.app/alldata?categoryfilter=Books)
